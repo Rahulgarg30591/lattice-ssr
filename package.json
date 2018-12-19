@@ -1,0 +1,46 @@
+{
+  "name": "lattice-SSR",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "node dist/main.js",
+    "watch": "webpack --mode development --watch & nodemon dist/main",
+    "dev": "rm -rf dist && webpack --mode development --progress",
+    "build": "rm -rf dist && webpack --mode production --progress",
+    "stats": "webpack --profile --json > stats.json && webpack-bundle-analyzer stats.json dist"
+  },
+  "dependencies": {
+    "@latticejs/widgets": "^1.0.1-beta.0",
+    "@material-ui/core": "^3.6.2",
+    "@material-ui/icons": "^3.0.1",
+    "express": "^4.16.4",
+    "nodemon": "^1.18.9",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
+    "react-jss": "^8.6.1",
+    "recompose": "^0.30.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-proposal-class-properties": "^7.2.1",
+    "@babel/plugin-proposal-object-rest-spread": "^7.2.0",
+    "@babel/plugin-transform-runtime": "^7.2.0",
+    "@babel/preset-env": "^7.2.0",
+    "@babel/preset-react": "^7.0.0",
+    "babel-eslint": "^10.0.1",
+    "babel-loader": "^8.0.4",
+    "babel-plugin-import": "^1.11.0",
+    "html-webpack-plugin": "^4.0.0-beta.5",
+    "reload": "^2.4.0",
+    "standard": "^12.0.1",
+    "webpack": "^4.27.1",
+    "webpack-bundle-analyzer": "^3.0.3",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "standard": {
+    "parser": "babel-eslint"
+  }
+}
