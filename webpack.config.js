@@ -6,7 +6,8 @@ module.exports = [
    devtool: 'cheap-module-source-map',
    module: {
      rules: [
-       { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' }
+       { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' },
+       { test: /\.(ttf|eot|otf|svg|png)$/, loader: 'file-loader' }
      ]
    },
    resolve: {
@@ -23,7 +24,8 @@ module.exports = [
   devtool: 'cheap-module-source-map',
   module: {
     rules: [
-      { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' }
+      { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' },
+      { test: /\.(ttf|eot|otf|svg|png)$/, loader: 'file-loader' }
     ]
   },
   resolve: {

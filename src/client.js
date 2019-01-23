@@ -4,7 +4,7 @@ import JssProvider from 'react-jss/lib/JssProvider';
 import {
   createGenerateClassName, MuiThemeProvider
 } from '@material-ui/core/styles';
-import App from './Components/App';
+import TreeComp from './Components/TreeComp';
 import theme from './theme';
 
 const generateClassName = createGenerateClassName();
@@ -19,3 +19,5 @@ hydrate(
     document.getElementById('jss-styles').parentNode.removeChild(document.getElementById('jss-styles'))
   }
 )
+
+// <App />
