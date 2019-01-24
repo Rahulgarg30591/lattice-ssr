@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@latticejs/dag": "^1.0.1-beta.0",
+    "@latticejs/infinite-list": "^1.0.1-beta.0",
     "@latticejs/mui-recharts": "^1.0.1-beta.0",
     "@latticejs/recharts-sunburst": "^1.0.1-beta.0",
     "@latticejs/tree": "^1.0.1-beta.0",

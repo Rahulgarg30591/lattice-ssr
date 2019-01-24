@@ -4,7 +4,7 @@ import JssProvider from 'react-jss/lib/JssProvider';
 import {
   createGenerateClassName, MuiThemeProvider
 } from '@material-ui/core/styles';
-import TreeComp from './Components/TreeComp';
+import App from './Components/App';
 import theme from './theme';
 
 const generateClassName = createGenerateClassName();

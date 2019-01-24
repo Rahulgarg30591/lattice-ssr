@@ -10,6 +10,15 @@ import { createMuiTheme } from '@material-ui/core/styles';
 import Sunburst from '@latticejs/recharts-sunburst';
 import Tree from '@latticejs/tree';
 import { withStyles } from '@material-ui/core/styles';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableOrderCell,
+  TableSearchCell
+} from '@latticejs/infinite-list';
 
 if (!global.window ) {
   global.window = {};
@@ -65,7 +74,14 @@ class App extends Component {
     this.getSunburstData = this.getSunburstData.bind(this);
     this.getLineData = this.getLineData.bind(this);
 
-    this.state = {};
+    this.renderBody = this.renderBody.bind(this);
+    this.findItem = this.findItem.bind(this);
+    this.delay = this.delay.bind(this);
+    this.loadMore = this.loadMore.bind(this);
+
+    this.state = {
+       items: Array.from(Array(10).keys()).map(v => ({ index: v, title: `title ${v}`, timestamp: Date.now() })),
+    };
   }
 
   getDAGConfig() {
@@ -175,6 +191,50 @@ class App extends Component {
     ];
   }
 
+  renderBody({ item, isEmpty, key, style }) {
+    if (isEmpty) {
+      return <h4>Empty list</h4>;
+    }
+
+    if (!item) {
+      return (
+        <TableRow key={key} style={style}>
+          <TableCell>loading...</TableCell>
+        </TableRow>
+      );
+    }
+
+    return (
+      <TableRow key={key} style={style}>
+        <TableCell>{item.index}</TableCell>
+        <TableCell>{item.title}</TableCell>
+        <TableCell>{item.timestamp}</TableCell>
+      </TableRow>
+    );
+  };
+
+  findItem({ index }) {
+    return this.state.items.find(i => i.index === index);
+  };
+
+  delay(time){
+    new Promise(resolve => setTimeout(resolve, time));
+  }
+
+  async loadMore({ startIndex, stopIndex }) {
+    await this.delay(500);
+
+    this.setState(state => {
+      const newItems = Array.from(Array(stopIndex - startIndex + 1).keys()).map(v => ({
+        index: startIndex + v,
+        title: `title ${startIndex + v}`,
+        timestamp: Date.now()
+      }));
+
+      return { items: [...state.items, ...newItems] };
+    });
+  };
+
   render () {
     const { classes } = this.props;
     const dagConfig = this.getDAGConfig();
@@ -186,8 +246,8 @@ class App extends Component {
       <div className={classes.root}>
         <AppBar position="static" className={classes.appBar}>
           <Toolbar>
-            <Typography variant="subtitle1" color="inherit" className={classes.flex}>
-              Basic Example
+            <Typography variant="h6" color="inherit" className={classes.flex}>
+              Server Side Rendering of Lattice Packages
             </Typography>
           </Toolbar>
         </AppBar>
@@ -222,22 +282,35 @@ class App extends Component {
             </Grid>
           </Grid>
         </Grid>
-        <Widget>
+        <Widget title="MUI Recharts">
           <center className={classnames(classes.mainContainerLC)}>
             <LineChart width={300} height={100} data={rechartsLineData}>
               <Line type='monotone' dataKey='pv' stroke='#8884d8' strokeWidth={2} isAnimationActive={false} />
             </LineChart>
           </center>
         </Widget>
-        <Tree
-          data={treeData}
-          onCheckItem={item => console.log("Check: ", item)}
-          onUnfoldItem={item => console.log("Unfold: ", item)}
-          onFoldItem={item => console.log("Fold: ", item)}
-          expandedAll
-          cascadeCheck
-        />
-        <Widget>
+        <Widget title="Infinite List">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Index</TableCell>
+                <TableCell>Title</TableCell>
+                <TableCell>Timestamp</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody
+              loadMore={this.loadMore}
+              findItem={this.findItem}
+              list={this.state.items}
+              rowCount={1000}
+              rowHeight={48}
+              height={500}
+            >
+              {this.renderBody}
+            </TableBody>
+          </Table>
+        </Widget>
+        <Widget title="DAG">
           <div className={classnames(classes.mainContainerDag)} aspect={3}>
               <Dag
                  onClick={() => { console.log('clicked') }}
@@ -248,7 +321,7 @@ class App extends Component {
                />
            </div>
         </Widget>
-        <Widget>
+        <Widget title="Recharts Sunburst">
           <ResponsiveContainer className={classnames(classes.mainContainer2)} aspect={5}>
             <Sunburst
               data={sunburstData}
@@ -276,3 +349,5 @@ export default withStyles(styles)(App);
 //   expandedAll
 //   cascadeCheck
 // />
+//
+//
