@@ -8,7 +8,7 @@ import Dag from '@latticejs/dag';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import { createMuiTheme } from '@material-ui/core/styles';
 import Sunburst from '@latticejs/recharts-sunburst';
-import Tree from '@latticejs/tree';
+import { Tree } from '@latticejs/tree';
 import { withStyles } from '@material-ui/core/styles';
 import {
   Table,
@@ -45,6 +45,14 @@ const styles = theme => ({
     width: '100%',
     height: 600,
   },
+  mainContainerSB: {
+    height: 400,
+    backgroundColor: '#898989',
+  },
+  mainContainerTree: {
+    width: 500,
+    height: 400,
+  },
   mainContainerLC: {
     backgroundColor: '#898989',
     paddingTop: '4%',
@@ -62,6 +70,13 @@ const styles = theme => ({
   },
   link: {
     color: theme.palette.text.secondary
+  },
+  tableHeadStyle: {
+    borderBottom: 0,
+  },
+  tableCellStyle: {
+    borderBottom: 0,
+    width: 400,
   }
 });
 
@@ -80,7 +95,7 @@ class App extends Component {
     this.loadMore = this.loadMore.bind(this);
 
     this.state = {
-       items: Array.from(Array(10).keys()).map(v => ({ index: v, title: `title ${v}`, timestamp: Date.now() })),
+       items: Array.from(Array(100).keys()).map(v => ({ index: v, title: `title ${v}`, timestamp: Date.now() })),
     };
   }
 
@@ -192,6 +207,8 @@ class App extends Component {
   }
 
   renderBody({ item, isEmpty, key, style }) {
+    const { classes } = this.props;
+
     if (isEmpty) {
       return <h4>Empty list</h4>;
     }
@@ -204,11 +221,13 @@ class App extends Component {
       );
     }
 
+    style.width = 1000;
+
     return (
       <TableRow key={key} style={style}>
-        <TableCell>{item.index}</TableCell>
-        <TableCell>{item.title}</TableCell>
-        <TableCell>{item.timestamp}</TableCell>
+        <TableCell classes={{ root: classes.tableCellStyle }}>{item.index}</TableCell>
+        <TableCell classes={{ root: classes.tableCellStyle }}>{item.title}</TableCell>
+        <TableCell classes={{ root: classes.tableCellStyle }}>{item.timestamp}</TableCell>
       </TableRow>
     );
   };
@@ -221,8 +240,8 @@ class App extends Component {
     new Promise(resolve => setTimeout(resolve, time));
   }
 
-  async loadMore({ startIndex, stopIndex }) {
-    await this.delay(500);
+  loadMore({ startIndex, stopIndex }) {
+    // await this.delay(500);
 
     this.setState(state => {
       const newItems = Array.from(Array(stopIndex - startIndex + 1).keys()).map(v => ({
@@ -289,22 +308,46 @@ class App extends Component {
             </LineChart>
           </center>
         </Widget>
+        <Widget title="Tree">
+          <Tree
+            treeData={treeData}
+            cascadeCheck
+            onCheckItem={item => console.log("Check: ", item)}
+            onUnfoldItem={item => console.log("Unfold: ", item)}
+            onFoldItem={item => console.log("Fold: ", item)}
+          />
+        </Widget>
+        <Grid container className={classes.mainContainer}>
+          <Grid item xs={12}>
+            <Widget title="Recharts Sunburst">
+              <center className={classnames(classes.mainContainerSB)}>
+                <Sunburst
+                  data={sunburstData}
+                  dataKey="size"
+                  fill="#00C49F"
+                  stroke="#fff"
+                  isAnimationActive={false}
+                  animationBegin={0}
+                  animationDuration={0}
+                  width={400}
+                  height={400}
+                />
+              </center>
+            </Widget>
+          </Grid>
+        </Grid>
+
         <Widget title="Infinite List">
           <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Index</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Timestamp</TableCell>
-              </TableRow>
-            </TableHead>
             <TableBody
               loadMore={this.loadMore}
               findItem={this.findItem}
               list={this.state.items}
               rowCount={1000}
               rowHeight={48}
-              height={500}
+              height={300}
+              width={(window && window.innerWidth) ?  (window.innerWidth - 50) : 1000}
+              rvInfiniteLoaderProps={{ minimumBatchSize: 24 }}
             >
               {this.renderBody}
             </TableBody>
@@ -320,19 +363,6 @@ class App extends Component {
                  {...dagConfig}
                />
            </div>
-        </Widget>
-        <Widget title="Recharts Sunburst">
-          <ResponsiveContainer className={classnames(classes.mainContainer2)} aspect={5}>
-            <Sunburst
-              data={sunburstData}
-              dataKey="size"
-              fill="#00C49F"
-              stroke="#fff"
-              isAnimationActive={false}
-              animationBegin={0}
-              animationDuration={0}
-            />
-          </ResponsiveContainer>
         </Widget>
       </div>
     )
