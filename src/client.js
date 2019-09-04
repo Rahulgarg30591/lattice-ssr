@@ -19,3 +19,5 @@ hydrate(
     document.getElementById('jss-styles').parentNode.removeChild(document.getElementById('jss-styles'))
   }
 )
+
+// <App />

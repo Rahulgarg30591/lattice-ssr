@@ -30,7 +30,7 @@ app.use((req,res) => {
   const html = renderToString(
     <JssProvider registry={sheetsRegistry} generateClassName={generateClassName}>
       <MuiThemeProvider theme={theme} sheetsManager={sheetsManager}>
-      <App />
+        <App />
       </MuiThemeProvider>
     </JssProvider>
   );

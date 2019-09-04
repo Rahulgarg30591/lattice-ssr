@@ -1,8 +1,28 @@
-import React, { PureComponent } from 'react'
-import { AppBar, Grid, IconButton, Toolbar, Typography } from '@material-ui/core'
+import React, { Component } from 'react'
+import { AppBar, Grid, IconButton, Toolbar, Typography } from '@material-ui/core';
+import classnames from 'classnames';
 import { Widget } from '@latticejs/widgets';
-import { CssBaseline } from '@material-ui/core'
-import { withStyles } from '@material-ui/core/styles'
+import { CssBaseline } from '@material-ui/core';
+import { LineChart, Line, ResponsiveContainer } from '@latticejs/mui-recharts';
+import Dag from '@latticejs/dag';
+import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
+import { createMuiTheme } from '@material-ui/core/styles';
+import Sunburst from '@latticejs/recharts-sunburst';
+import { Tree } from '@latticejs/tree';
+import { withStyles } from '@material-ui/core/styles';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableOrderCell,
+  TableSearchCell
+} from '@latticejs/infinite-list';
+
+if (!global.window ) {
+  global.window = {};
+}
 
 const styles = theme => ({
   root: {
@@ -15,6 +35,30 @@ const styles = theme => ({
     backgroundColor: theme.palette.primary[theme.palette.type],
     color: theme.palette.primary.contrastText
   },
+  mainContainer2: {
+    backgroundColor: '#898989',
+    width: 300,
+    height: 300,
+  },
+  mainContainerDag: {
+    backgroundColor: '#898989',
+    width: '100%',
+    height: 600,
+  },
+  mainContainerSB: {
+    height: 400,
+    backgroundColor: '#898989',
+  },
+  mainContainerTree: {
+    width: 500,
+    height: 400,
+  },
+  mainContainerLC: {
+    backgroundColor: '#898989',
+    paddingTop: '4%',
+    width: '100%',
+    height: 150,
+  },
   mainContainer: {
     backgroundColor: '#898989',
     height: '100%',
@@ -26,21 +70,203 @@ const styles = theme => ({
   },
   link: {
     color: theme.palette.text.secondary
+  },
+  tableHeadStyle: {
+    borderBottom: 0,
+  },
+  tableCellStyle: {
+    borderBottom: 0,
+    width: 400,
   }
 });
 
-class App extends PureComponent {
-  state = {}
+class App extends Component {
+  constructor(props) {
+    super(props);
+
+    this.getDAGConfig = this.getDAGConfig.bind(this);
+    this.getTreeData = this.getTreeData.bind(this);
+    this.getSunburstData = this.getSunburstData.bind(this);
+    this.getLineData = this.getLineData.bind(this);
+
+    this.renderBody = this.renderBody.bind(this);
+    this.findItem = this.findItem.bind(this);
+    this.delay = this.delay.bind(this);
+    this.loadMore = this.loadMore.bind(this);
+
+    this.state = {
+       items: Array.from(Array(100).keys()).map(v => ({ index: v, title: `title ${v}`, timestamp: Date.now() })),
+    };
+  }
+
+  getDAGConfig() {
+    return {
+      title: "Package Dependencies",
+      nodes: [
+        { title: "app" },
+        { title: "lodash" },
+        { title: "react" },
+        { title: "react-dom" },
+        { title: "apollo" },
+        { title: "enzyme" }
+      ],
+      edges: [
+        {
+          source: "app",
+          target: "lodash"
+        },
+        {
+          source: "app",
+          target: "react"
+        },
+        {
+          source: "app",
+          target: "react-dom"
+        },
+        {
+          source: "react",
+          target: "react-dom"
+        },
+        {
+          source: "app",
+          target: "apollo"
+        },
+        {
+          source: "app",
+          target: "enzyme"
+        }
+      ],
+      width: 600,
+      height: 600,
+    };
+  }
+
+  getSunburstData() {
+    return [
+      {
+        children: [
+          { name: 'Data', size: 20544 },
+          { name: 'DataList', size: 19788 },
+          { name: 'DataSprite', size: 10349 },
+          { name: 'EdgeSprite', size: 3301 },
+          { name: 'NodeSprite', size: 19382 },
+          {
+            name: 'render',
+            children: [
+              { name: 'ArrowType', size: 698 },
+              { name: 'EdgeRenderer', size: 5569 },
+              { name: 'IRenderer', size: 353 },
+              { name: 'ShapeRenderer', size: 2247 }
+            ]
+          },
+          { name: 'ScaleBinding', size: 11275 },
+          { name: 'Tree', size: 7147 },
+          { name: 'TreeBuilder', size: 9930 }
+        ]
+      }
+    ];
+  }
+
+  getLineData() {
+    return [
+      {name: 'Page A', pv: 2400, amt: 2400},
+      {name: 'Page B', pv: 1398, amt: 2210},
+      {name: 'Page C', pv: 9800, amt: 2290},
+      {name: 'Page D', pv: 3908, amt: 2000},
+      {name: 'Page E', pv: 4800, amt: 2181},
+      {name: 'Page F', pv: 3800, amt: 2500},
+      {name: 'Page G', pv: 4300, amt: 2100},
+    ];
+  }
+
+  getTreeData() {
+    return [
+      {
+        label: "index.js"
+      },
+      {
+        label: "demo",
+        children: [
+          {
+            label: "file1.txt"
+          },
+          {
+            label: "file2.txt"
+          },
+          {
+            label: "examples",
+            children: [
+              {
+                label: "example1.js"
+              }
+            ]
+          }
+        ]
+      }
+    ];
+  }
+
+  renderBody({ item, isEmpty, key, style }) {
+    const { classes } = this.props;
+
+    if (isEmpty) {
+      return <h4>Empty list</h4>;
+    }
+
+    if (!item) {
+      return (
+        <TableRow key={key} style={style}>
+          <TableCell>loading...</TableCell>
+        </TableRow>
+      );
+    }
+
+    style.width = 1000;
+
+    return (
+      <TableRow key={key} style={style}>
+        <TableCell classes={{ root: classes.tableCellStyle }}>{item.index}</TableCell>
+        <TableCell classes={{ root: classes.tableCellStyle }}>{item.title}</TableCell>
+        <TableCell classes={{ root: classes.tableCellStyle }}>{item.timestamp}</TableCell>
+      </TableRow>
+    );
+  };
+
+  findItem({ index }) {
+    return this.state.items.find(i => i.index === index);
+  };
+
+  delay(time){
+    new Promise(resolve => setTimeout(resolve, time));
+  }
+
+  loadMore({ startIndex, stopIndex }) {
+    // await this.delay(500);
+
+    this.setState(state => {
+      const newItems = Array.from(Array(stopIndex - startIndex + 1).keys()).map(v => ({
+        index: startIndex + v,
+        title: `title ${startIndex + v}`,
+        timestamp: Date.now()
+      }));
+
+      return { items: [...state.items, ...newItems] };
+    });
+  };
 
   render () {
     const { classes } = this.props;
+    const dagConfig = this.getDAGConfig();
+    const sunburstData = this.getSunburstData();
+    const treeData = this.getTreeData();
+    const rechartsLineData = this.getLineData();
 
     return (
       <div className={classes.root}>
         <AppBar position="static" className={classes.appBar}>
           <Toolbar>
-            <Typography variant="subtitle1" color="inherit" className={classes.flex}>
-              Basic Example
+            <Typography variant="h6" color="inherit" className={classes.flex}>
+              Server Side Rendering of Lattice Packages
             </Typography>
           </Toolbar>
         </AppBar>
@@ -74,24 +300,84 @@ class App extends PureComponent {
               </Grid>
             </Grid>
           </Grid>
+        </Grid>
+        <Widget title="MUI Recharts">
+          <center className={classnames(classes.mainContainerLC)}>
+            <LineChart width={300} height={100} data={rechartsLineData}>
+              <Line type='monotone' dataKey='pv' stroke='#8884d8' strokeWidth={2} isAnimationActive={false} />
+            </LineChart>
+          </center>
+        </Widget>
+        <Widget title="Tree">
+          <Tree
+            treeData={treeData}
+            cascadeCheck
+            onCheckItem={item => console.log("Check: ", item)}
+            onUnfoldItem={item => console.log("Unfold: ", item)}
+            onFoldItem={item => console.log("Fold: ", item)}
+          />
+        </Widget>
+        <Grid container className={classes.mainContainer}>
           <Grid item xs={12}>
-            <Typography variant="subtitle2" align="center">
-              Want to learn more? Check the&nbsp;
-              <a
-                className={classes.link}
-                href="https://github.com/latticejs/lattice"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                docs
-              </a>
-              !
-            </Typography>
+            <Widget title="Recharts Sunburst">
+              <center className={classnames(classes.mainContainerSB)}>
+                <Sunburst
+                  data={sunburstData}
+                  dataKey="size"
+                  fill="#00C49F"
+                  stroke="#fff"
+                  isAnimationActive={false}
+                  animationBegin={0}
+                  animationDuration={0}
+                  width={400}
+                  height={400}
+                />
+              </center>
+            </Widget>
           </Grid>
         </Grid>
+
+        <Widget title="Infinite List">
+          <Table>
+            <TableBody
+              loadMore={this.loadMore}
+              findItem={this.findItem}
+              list={this.state.items}
+              rowCount={1000}
+              rowHeight={48}
+              height={300}
+              width={(window && window.innerWidth) ?  (window.innerWidth - 50) : 1000}
+              rvInfiniteLoaderProps={{ minimumBatchSize: 24 }}
+            >
+              {this.renderBody}
+            </TableBody>
+          </Table>
+        </Widget>
+        <Widget title="DAG">
+          <div className={classnames(classes.mainContainerDag)} aspect={3}>
+              <Dag
+                 onClick={() => { console.log('clicked') }}
+                 zoomEnable={true}
+                 onEdgeClick={() => { console.log('Edge click') }}
+                 onNodeClick={() => { console.log('Node click') }}
+                 {...dagConfig}
+               />
+           </div>
+        </Widget>
       </div>
     )
   }
 }
 
 export default withStyles(styles)(App);
+//
+// <Tree
+//   data={treeData}
+//   onCheckItem={item => console.log("Check: ", item)}
+//   onUnfoldItem={item => console.log("Unfold: ", item)}
+//   onFoldItem={item => console.log("Fold: ", item)}
+//   expandedAll
+//   cascadeCheck
+// />
+//
+//
